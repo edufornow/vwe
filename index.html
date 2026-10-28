@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VWE Evaluator™ - AI CBSE Class 10 Board Answer Checker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        vwe: {
+                            50: '#e6f7ef',
+                            100: '#c3ebd8',
+                            400: '#00cc6a',
+                            500: '#00a859',
+                            600: '#008744',
+                            700: '#006633',
+                            900: '#003319',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- html2pdf for report downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- pdf.js CDN for client-side PDF page rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (window['pdfjs-dist/build/pdf']) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080f0a;
+            color: #f0fdf4;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 168, 89, 0.1) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(0, 135, 68, 0.08) 0%, transparent 45%);
+        }
+        .glass-panel {
+            background: rgba(13, 25, 18, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 168, 89, 0.22);
+        }
+        .green-gradient-text {
+            background: linear-gradient(135deg, #4ade80 0%, #00a859 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060c07;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #193322;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00a859;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- TOP ANNOUNCEMENT BANNER -->
+    <div class="bg-gradient-to-r from-vwe-900 via-vwe-700 to-vwe-900 border-b border-vwe-500/30 text-xs py-1.5 px-4 text-center text-vwe-100 flex items-center justify-center gap-2">
+        <span class="bg-vwe-500 text-black font-bold px-2 py-0.5 rounded text-[10px] tracking-wide uppercase">CBSE 2026 Marking Standard</span>
+        <span>Powered by Gemini 3.8 Flash Vision API for strict step-marking alignment.</span>
+    </div>
+
+    <!-- MAIN HEADER WITH BRANDING -->
+    <header class="sticky top-0 z-40 bg-black/85 backdrop-blur-md border-b border-vwe-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- Logo & Branding Header -->
+                <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-vwe-400 to-vwe-700 p-0.5 shadow-lg shadow-vwe-500/20 flex items-center justify-center">
+                            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                                <i class="fa-solid font-bold text-vwe-400 text-2xl fa-laptop-code"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center">
+                                    VWE <span class="green-gradient-text ml-1.5">Evaluator</span>
+                                    <span class="text-xs text-vwe-400 align-top ml-1">™</span>
+                                </h1>
+                            </div>
+                            <p class="text-[11px] sm:text-xs text-vwe-100/70 font-medium tracking-wide">
+                                INTELLIGENT ASSESSMENT <span class="text-vwe-500 font-bold mx-1">|</span> PERSONALIZED FEEDBACK <span class="text-vwe-500 font-bold mx-1">|</span> LEARN WITHOUT LIMITS
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="hidden lg:flex items-center gap-3 pl-6 border-l border-vwe-800/80 text-xs font-semibold text-vwe-400 uppercase tracking-widest">
+                        <span>SCAN</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-vwe-600"></i>
+                        <span>EXPLORE</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-vwe-600"></i>
+                        <span>LEARN</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-vwe-600"></i>
+                        <span>IMPROVE</span>
+                    </div>
+                </div>
+
+                <!-- API & Model Setup Buttons -->
+                <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <button id="apiKeyModalBtn" onclick="toggleModal('apiModal', true)" class="text-xs px-3.5 py-2 rounded-lg glass-panel hover:bg-vwe-900/40 text-vwe-100 flex items-center gap-2 border border-vwe-500/30 transition">
+                        <span id="apiStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="apiStatusText" class="font-medium">API Settings</span>
+                        <i class="fa-solid fa-gear text-vwe-400 ml-1"></i>
+                    </button>
+                    <a href="#evaluate" class="text-xs bg-gradient-to-r from-vwe-500 to-vwe-600 hover:from-vwe-400 hover:to-vwe-500 text-white font-bold px-4 py-2 rounded-lg shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen-nib"></i> Evaluator Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-8">
+
+        <!-- DASHBOARD HERO BANNER -->
+        <section class="glass-panel rounded-2xl p-6 md:p-8 relative overflow-hidden border-vwe-500/30">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-vwe-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <div class="lg:col-span-2 space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-vwe-950/80 border border-vwe-500/40 text-vwe-400 text-xs font-medium">
+                        <i class="fa-solid fa-graduation-cap"></i> CBSE Class 10 Board Marking Assistant
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                        Upload Answer Sheets. <br><span class="green-gradient-text">Get Board-Grade Step Evaluation.</span>
+                    </h2>
+                    <p class="text-sm text-gray-300 max-w-2xl leading-relaxed">
+                        VWE Evaluator™ transcribes handwritten answer sheets, matches step-marking schemes, highlights missing key terms/SI units, and generates official CBSE model answer keys.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="p-3.5 rounded-xl bg-slate-950/60 border border-vwe-500/20">
+                        <div class="text-xl font-bold text-vwe-400"><i class="fa-solid fa-check-double text-vwe-500 mr-1"></i> Step Marks</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">CBSE Breakdown</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-950/60 border border-vwe-500/20">
+                        <div class="text-xl font-bold text-vwe-400"><i class="fa-solid fa-bolt text-amber-400 mr-1"></i> 3.8 Flash</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">High Speed AI</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-950/60 border border-vwe-500/20">
+                        <div class="text-xl font-bold text-vwe-400"><i class="fa-solid fa-scale-balanced text-vwe-400 mr-1"></i> Dual Mode</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">Normal vs Strict</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-950/60 border border-vwe-500/20">
+                        <div class="text-xl font-bold text-vwe-400"><i class="fa-solid fa-file-pdf text-red-400 mr-1"></i> PDF + Images</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">Multi-page Parse</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EVALUATION INTERFACE PANEL -->
+        <section id="evaluate" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- LEFT FORM CONTROLS -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- PARAMETERS CARD -->
+                <div class="glass-panel rounded-2xl p-5 border-vwe-500/30 space-y-4">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2 border-b border-vwe-800/80 pb-3">
+                        <i class="fa-solid fa-sliders text-vwe-400"></i> Evaluation Parameters
+                    </h3>
+
+                    <!-- Subject Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-vwe-200 mb-1.5 uppercase tracking-wide">
+                            Select Class 10 CBSE Subject
+                        </label>
+                        <select id="subjectSelect" class="w-full bg-slate-950 border border-vwe-500/30 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-vwe-400 transition">
+                            <option value="Science (Class 10 CBSE - Code 086)">Science (086) - Physics, Chem, Bio</option>
+                            <option value="Mathematics Standard (Class 10 CBSE - Code 041)">Mathematics Standard (041)</option>
+                            <option value="Social Science (Class 10 CBSE - Code 087)">Social Science (087) - History, Geo, Civics, Eco</option>
+                            <option value="English Language & Literature (Class 10 CBSE - Code 184)">English Language & Literature (184)</option>
+                            <option value="Hindi Course B (Class 10 CBSE - Code 085)">Hindi Course B (085)</option>
+                            <option value="Artificial Intelligence (Class 10 CBSE - Code 417)">Artificial Intelligence (417)</option>
+                        </select>
+                    </div>
+
+                    <!-- AI Model Selector Dropdown -->
+                    <div>
+                        <label class="block text-xs font-semibold text-vwe-200 mb-1.5 uppercase tracking-wide">
+                            Select Gemini Model Endpoint
+                        </label>
+                        <select id="modelSelect" class="w-full bg-slate-950 border border-vwe-500/30 rounded-xl px-3 py-2.5 text-xs text-vwe-300 font-mono focus:outline-none focus:border-vwe-400 transition">
+                            <option value="gemini-3.8-flash" selected>gemini-3.8-flash (Recommended / Fast)</option>
+                            <option value="gemini-3.8-pro">gemini-3.8-pro (Highest Reasoning)</option>
+                            <option value="gemini-3.0-flash">gemini-3.0-flash (Stable Vision)</option>
+                            <option value="gemini-2.5-flash">gemini-2.5-flash (Legacy)</option>
+                        </select>
+                    </div>
+
+                    <!-- Rigor Mode Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-vwe-200 mb-1.5 uppercase tracking-wide">
+                            Evaluation Rigor Mode
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="evalMode" value="normal" checked class="peer sr-only">
+                                <div class="p-3 rounded-xl border border-vwe-500/30 bg-slate-950/60 peer-checked:bg-vwe-950 peer-checked:border-vwe-400 peer-checked:ring-1 peer-checked:ring-vwe-400 transition text-left h-full">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-bold text-white">Normal</span>
+                                        <i class="fa-solid fa-hand-holding-heart text-vwe-400 text-xs"></i>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 leading-tight">Generous step marks, lenient on minor spelling errors.</p>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="evalMode" value="strict" class="peer sr-only">
+                                <div class="p-3 rounded-xl border border-vwe-500/30 bg-slate-950/60 peer-checked:bg-vwe-950 peer-checked:border-rose-500 peer-checked:ring-1 peer-checked:ring-rose-500 transition text-left h-full">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-bold text-white">Strict Board</span>
+                                        <i class="fa-solid fa-gavel text-rose-400 text-xs"></i>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 leading-tight">Deducts for missing SI units, key terms, or missing steps.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Max Marks Optional Context -->
+                    <div>
+                        <label class="block text-xs font-semibold text-vwe-200 mb-1.5 uppercase tracking-wide">
+                            Max Marks / Weightage (Optional)
+                        </label>
+                        <input type="number" id="maxMarksInput" placeholder="Auto-detected or enter e.g. 5, 10, 80" class="w-full bg-slate-950 border border-vwe-500/30 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-vwe-400 transition">
+                    </div>
+                </div>
+
+                <!-- UPLOAD CARD -->
+                <div class="glass-panel rounded-2xl p-5 border-vwe-500/30 space-y-4">
+                    <h3 class="text-base font-bold text-white flex items-center justify-between border-b border-vwe-800/80 pb-3">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up text-vwe-400"></i> Student Answer Sheet
+                        </span>
+                        <span class="text-[10px] text-vwe-300 font-medium">PDF / JPG / PNG</span>
+                    </h3>
+
+                    <!-- Drag & Drop -->
+                    <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-vwe-500/40 hover:border-vwe-400 bg-slate-950/40 rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group">
+                        <input type="file" id="fileInput" accept="image/*,application/pdf" multiple class="hidden" onchange="handleFileSelect(event)">
+                        <div class="w-12 h-12 rounded-full bg-vwe-950 flex items-center justify-center text-vwe-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-file-pdf text-xl"></i>
+                        </div>
+                        <p class="text-xs font-semibold text-white">Click or drag & drop answer sheets (PDF or Images)</p>
+                        <p class="text-[10px] text-gray-400">PDF files auto-convert into high-resolution pages</p>
+                    </div>
+
+                    <!-- Previews -->
+                    <div id="previewContainer" class="hidden space-y-2">
+                        <div class="flex items-center justify-between text-xs font-semibold text-vwe-200">
+                            <span>Parsed Pages (<span id="fileCount">0</span>)</span>
+                            <button onclick="clearFiles()" class="text-rose-400 hover:text-rose-300 text-[11px]"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                        </div>
+                        <div id="imageGrid" class="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1 bg-slate-950/60 rounded-xl border border-vwe-800"></div>
+                    </div>
+
+                    <!-- Question Prompt / Marking Scheme Context -->
+                    <div>
+                        <label class="block text-xs font-semibold text-vwe-200 mb-1.5 uppercase tracking-wide">
+                            Question Text or Marking Context (Optional)
+                        </label>
+                        <textarea id="questionContext" rows="3" placeholder="Paste the official question statement or specific instructions if handwritten text is unclear..." class="w-full bg-slate-950 border border-vwe-500/30 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-vwe-400 transition placeholder-gray-500"></textarea>
+                    </div>
+
+                    <!-- SUBMIT BUTTON -->
+                    <button id="evaluateBtn" onclick="runEvaluation()" class="w-full bg-gradient-to-r from-vwe-500 via-vwe-600 to-vwe-700 hover:from-vwe-400 hover:to-vwe-600 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-vwe-500/20 text-sm tracking-wide uppercase flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Run Board Evaluation
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- RIGHT OUTPUT REPORT PANEL -->
+            <div class="lg:col-span-7">
+                <div class="glass-panel rounded-2xl p-6 border-vwe-500/30 min-h-[560px] flex flex-col justify-between relative" id="reportOuterCard">
+                    
+                    <!-- EMPTY STATE -->
+                    <div id="emptyState" class="my-auto py-16 text-center space-y-4">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-vwe-950 border border-vwe-500/30 flex items-center justify-center text-vwe-400 text-3xl shadow-inner">
+                            <i class="fa-solid fa-file-signature"></i>
+                        </div>
+                        <div class="max-w-md mx-auto space-y-1">
+                            <h4 class="text-lg font-bold text-white">No Answer Script Evaluated Yet</h4>
+                            <p class="text-xs text-gray-400 leading-relaxed">
+                                Upload one or more handwritten answer sheet photos or PDFs on the left panel and click <strong>"Run Board Evaluation"</strong> to get instant step-by-step marks, missing keywords, and official CBSE model answer keys.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- LOADING DISPLAY -->
+                    <div id="loadingState" class="hidden my-auto py-20 text-center space-y-5">
+                        <div class="relative w-16 h-16 mx-auto">
+                            <div class="w-16 h-16 rounded-full border-4 border-vwe-900 border-t-vwe-400 animate-spin"></div>
+                            <i class="fa-solid fa-brain text-vwe-400 text-xl absolute inset-0 flex items-center justify-center"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-base font-bold text-white animate-pulse">Evaluating Answer Script...</h4>
+                            <p class="text-xs text-vwe-300" id="loadingStepText">Scanning handwriting & matching CBSE marking scheme steps...</p>
+                        </div>
+                    </div>
+
+                    <!-- REPORT CONTAINER -->
+                    <div id="reportContainer" class="hidden space-y-6">
+                        
+                        <!-- REPORT HEADER -->
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-vwe-800 pb-4" id="reportHeader">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span id="subjectBadge" class="px-2.5 py-0.5 rounded-md bg-vwe-950 border border-vwe-500/40 text-vwe-300 text-[11px] font-bold">Subject</span>
+                                    <span id="modeBadge" class="px-2.5 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold">Normal Mode</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mt-1">Official CBSE Evaluation Report</h3>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <button onclick="downloadPDF()" class="flex-1 sm:flex-none text-xs bg-slate-900 hover:bg-slate-800 border border-vwe-500/30 text-vwe-200 px-3 py-2 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-file-pdf text-rose-400"></i> Export PDF
+                                </button>
+                                <button onclick="copyReport()" class="flex-1 sm:flex-none text-xs bg-slate-900 hover:bg-slate-800 border border-vwe-500/30 text-vwe-200 px-3 py-2 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-copy text-vwe-400"></i> Copy Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PRINTABLE REPORT -->
+                        <div id="printableReport" class="space-y-6">
+                            
+                            <!-- SCORE BANNER -->
+                            <div class="p-5 rounded-2xl bg-gradient-to-r from-vwe-950 via-slate-950 to-vwe-950 border border-vwe-500/40 flex items-center justify-between">
+                                <div class="space-y-1">
+                                    <p class="text-xs text-vwe-300 font-semibold uppercase tracking-wider">Overall Score Awarded</p>
+                                    <div class="flex items-baseline gap-2">
+                                        <span id="marksAwarded" class="text-4xl font-black text-white">0</span>
+                                        <span class="text-xl text-vwe-400 font-bold">/ <span id="maxMarks">0</span></span>
+                                    </div>
+                                    <p id="scoreGradeTag" class="text-xs text-emerald-400 font-medium">Performance Grade: Outstanding</p>
+                                </div>
+                                <div id="scorePercentageBadge" class="w-16 h-16 rounded-full bg-vwe-900/80 border-2 border-vwe-400 flex items-center justify-center text-lg font-extrabold text-vwe-300 shadow-lg">
+                                    0%
+                                </div>
+                            </div>
+
+                            <!-- TRANSCRIBED RESPONSE -->
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-bold text-vwe-400 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-quote-left"></i> Transcribed Student Response
+                                </h4>
+                                <div id="transcribedText" class="p-4 rounded-xl bg-slate-950/80 border border-vwe-900 text-xs text-gray-300 leading-relaxed font-mono whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    -
+                                </div>
+                            </div>
+
+                            <!-- STEP BREAKDOWN -->
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-bold text-vwe-400 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check"></i> Step-by-Step Marking Breakdown
+                                </h4>
+                                <div id="stepBreakdown" class="space-y-2"></div>
+                            </div>
+
+                            <!-- STRENGTHS & MISSING POINTS -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/20 space-y-2">
+                                    <h5 class="text-xs font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-check"></i> Key Strengths
+                                    </h5>
+                                    <ul id="strengthsList" class="text-xs text-gray-300 space-y-1 list-disc list-inside">
+                                        <li>Good overall presentation.</li>
+                                    </ul>
+                                </div>
+
+                                <div class="p-4 rounded-xl bg-rose-950/30 border border-rose-500/20 space-y-2">
+                                    <h5 class="text-xs font-bold text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-xmark"></i> Missing Points / Errors
+                                    </h5>
+                                    <ul id="deductionsList" class="text-xs text-gray-300 space-y-1 list-disc list-inside">
+                                        <li>None noted.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- MODEL ANSWER KEY -->
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-bold text-vwe-400 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-key"></i> Official CBSE Model Answer Key & Solution
+                                </h4>
+                                <div id="modelAnswerKey" class="p-4 rounded-xl bg-vwe-950/40 border border-vwe-500/30 text-xs text-vwe-100 leading-relaxed space-y-2"></div>
+                            </div>
+
+                            <!-- REMARKS -->
+                            <div class="p-4 rounded-xl bg-slate-950/90 border border-vwe-800 space-y-1">
+                                <h5 class="text-xs font-bold text-vwe-300 uppercase tracking-wide flex items-center gap-1.5">
+                                    <i class="fa-solid fa-lightbulb text-amber-400"></i> Examiner Remarks & Tips
+                                </h5>
+                                <p id="examinerRemarks" class="text-xs text-gray-300 italic leading-relaxed">-</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-black border-t border-vwe-900 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-xs text-vwe-100/60 font-medium">
+                © VWE Evaluator™ - Class 10 CBSE Board AI Evaluation Assistant. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- API KEY MODAL -->
+    <div id="apiModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl max-w-md w-full p-6 space-y-5 border-vwe-500/40 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-vwe-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-key text-vwe-400"></i> Configure Gemini API Key
+                </h3>
+                <button onclick="toggleModal('apiModal', false)" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-xs text-gray-300 leading-relaxed">
+                    VWE Evaluator™ connects directly to Google AI Studio's Gemini API endpoints (e.g., <code class="text-vwe-400 font-mono">gemini-3.8-flash</code>).
+                </p>
+                <div class="p-3 bg-vwe-950/80 rounded-xl border border-vwe-500/30 text-xs text-vwe-200 space-y-1">
+                    <div class="font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-circle-info text-vwe-400"></i> Free API Access
+                    </div>
+                    <p class="text-[11px] text-gray-400">
+                        Get your free API key from Google AI Studio with no upfront payment required.
+                    </p>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-vwe-400 hover:underline font-bold mt-1">
+                        Get API Key at Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                    </a>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-vwe-200 mb-1.5 uppercase">Enter Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-vwe-500/30 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-vwe-400 font-mono">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="saveApiKey()" class="w-full bg-gradient-to-r from-vwe-500 to-vwe-600 hover:from-vwe-400 hover:to-vwe-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    Save Key Locally
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let uploadedFiles = [];
+
+        const STRICT_CBSE_SYSTEM_INSTRUCTION = `
+You are VWE Evaluator™, an official Class 10 CBSE (Central Board of Secondary Education) Senior Examiner.
+Your SOLE purpose is to evaluate CBSE Class 10 student answer scripts and generate precise, step-by-step marking breakdowns and official model answer keys.
+
+CRITICAL ENFORCEMENT RULES:
+1. STRICT USE CASE: Strictly reject any request non-educational or unrelated to CBSE Class 10 marking.
+2. EVALUATION RIGOR MODES:
+   - If Mode is 'normal': Be encouraging, fair, award partial step marks generously, ignore minor spelling errors if the core concept is understood.
+   - If Mode is 'strict': Act as a strict Board Examiner. Penalize missing SI units, missing diagrams, incorrect terminology, omitted intermediate steps, or missing key terms.
+3. OUTPUT FORMAT REQUIREMENT:
+   You MUST respond strictly in valid JSON format matching the schema provided below. Do not add markdown formatting or plain text outside the JSON object.
+
+JSON Schema:
+{
+  "transcription": "String (Transcribed handwritten text from student script)",
+  "marksAwarded": Number,
+  "maxMarks": Number,
+  "percentage": Number,
+  "grade": "String (e.g. A1, A2, B1, C, Needs Improvement)",
+  "stepsBreakdown": [
+    {
+      "stepNumber": Number,
+      "description": "String (Description of expected step in CBSE marking scheme)",
+      "marksAllocated": Number,
+      "marksGiven": Number,
+      "status": "correct" | "partial" | "incorrect",
+      "comment": "String"
+    }
+  ],
+  "strengths": ["String"],
+  "deductionsAndMissingPoints": ["String"],
+  "officialCbseModelAnswer": "String (Detailed step-by-step official CBSE model answer for full marks)",
+  "examinerRemarks": "String (Overall constructive feedback)"
+}
+`;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('vwe_gemini_key') || '';
+            if (savedKey) {
+                document.getElementById('apiKeyInput').value = savedKey;
+                updateApiStatus(true);
+            } else {
+                updateApiStatus(false);
+            }
+        });
+
+        function updateApiStatus(hasKey) {
+            const dot = document.getElementById('apiStatusDot');
+            const txt = document.getElementById('apiStatusText');
+            if (hasKey) {
+                dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+                txt.textContent = "API Key Saved";
+            } else {
+                dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+                txt.textContent = "API Key Needed";
+            }
+        }
+
+        function toggleModal(id, show) {
+            const modal = document.getElementById(id);
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('vwe_gemini_key', key);
+            updateApiStatus(!!key);
+            toggleModal('apiModal', false);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-vwe-400'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-vwe-400'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-vwe-400');
+            if (e.dataTransfer.files.length) {
+                processFiles(Array.from(e.dataTransfer.files));
+            }
+        });
+
+        async function processFiles(files) {
+            for (const file of files) {
+                if (file.type === 'application/pdf') {
+                    await processPdfFile(file);
+                } else if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        uploadedFiles.push({
+                            name: file.name,
+                            base64: e.target.result.split(',')[1],
+                            mimeType: file.type,
+                            preview: e.target.result
+                        });
+                        renderPreviews();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        async function processPdfFile(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    uploadedFiles.push({
+                        name: `${file.name} (Pg ${pageNum})`,
+                        base64: dataUrl.split(',')[1],
+                        mimeType: 'image/jpeg',
+                        preview: dataUrl
+                    });
+                }
+                renderPreviews();
+            } catch (err) {
+                console.error('PDF Processing Error:', err);
+                alert(`Failed to parse PDF file "${file.name}". Ensure it is a valid document.`);
+            }
+        }
+
+        function renderPreviews() {
+            const grid = document.getElementById('imageGrid');
+            const container = document.getElementById('previewContainer');
+            const count = document.getElementById('fileCount');
+
+            grid.innerHTML = '';
+            if (uploadedFiles.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            count.textContent = uploadedFiles.length;
+
+            uploadedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = "relative group rounded-lg overflow-hidden border border-vwe-500/30 h-20 bg-slate-900";
+                div.innerHTML = `
+                    <img src="${file.preview}" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 inset-x-0 bg-black/70 text-[9px] text-vwe-300 px-1 py-0.5 truncate font-mono">
+                        ${file.name}
+                    </div>
+                    <button onclick="removeFile(${index})" class="absolute top-1 right-1 bg-black/70 hover:bg-rose-600 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderPreviews();
+        }
+
+        function clearFiles() {
+            uploadedFiles = [];
+            document.getElementById('fileInput').value = '';
+            renderPreviews();
+        }
+
+        async function runEvaluation() {
+            const apiKey = localStorage.getItem('vwe_gemini_key') || document.getElementById('apiKeyInput').value.trim();
+
+            if (!apiKey) {
+                toggleModal('apiModal', true);
+                return;
+            }
+
+            const subject = document.getElementById('subjectSelect').value;
+            const modelName = document.getElementById('modelSelect').value;
+            const evalMode = document.querySelector('input[name="evalMode"]:checked').value;
+            const maxMarks = document.getElementById('maxMarksInput').value.trim();
+            const questionContext = document.getElementById('questionContext').value.trim();
+
+            if (uploadedFiles.length === 0 && !questionContext) {
+                alert('Please upload answer sheet images or provide question context text to evaluate.');
+                return;
+            }
+
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('reportContainer').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+
+            let userPromptText = `Subject: ${subject}\nEvaluation Rigor Mode: ${evalMode.toUpperCase()}\n`;
+            if (maxMarks) userPromptText += `Target Total Marks for this question/section: ${maxMarks}\n`;
+            if (questionContext) userPromptText += `Question Context / Provided Text:\n"${questionContext}"\n`;
+
+            userPromptText += `\nPlease transcribe the attached handwritten answer sheet(s), evaluate the response step-by-step according to CBSE Class 10 official marking rules for ${subject}, and output the exact required JSON schema.`;
+
+            const parts = [{ text: userPromptText }];
+            uploadedFiles.forEach(file => {
+                parts.push({
+                    inlineData: {
+                        mimeType: file.mimeType,
+                        data: file.base64
+                    }
+                });
+            });
+
+            const payload = {
+                contents: [{ role: "user", parts: parts }],
+                systemInstruction: { parts: [{ text: STRICT_CBSE_SYSTEM_INSTRUCTION }] },
+                generationConfig: {
+                    responseMimeType: "application/json"
+                }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+            try {
+                const responseData = await fetchWithRetry(apiUrl, payload);
+                
+                if (responseData.error) {
+                    throw new Error(responseData.error.message || `API Error (${responseData.error.code || 'Unknown'})`);
+                }
+
+                const candidate = responseData.candidates?.[0];
+                if (!candidate) {
+                    if (responseData.promptFeedback?.blockReason) {
+                        throw new Error(`Content blocked by Gemini safety filters: ${responseData.promptFeedback.blockReason}`);
+                    }
+                    throw new Error("No response candidates returned by the AI model. Please retry.");
+                }
+
+                const jsonText = candidate?.content?.parts?.[0]?.text;
+                if (!jsonText) throw new Error("Received empty content from Gemini API.");
+
+                const result = JSON.parse(jsonText);
+                renderReport(result, subject, evalMode);
+
+            } catch (error) {
+                console.error("Evaluation Error:", error);
+                alert("Evaluation Failed: " + (error.message || "Unable to process request. Please verify your API key and try again."));
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
+        }
+
+        async function fetchWithRetry(url, payload, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (res.ok) {
+                        return data;
+                    }
+
+                    if (data.error) {
+                        throw new Error(data.error.message || `HTTP ${res.status}: ${res.statusText}`);
+                    }
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                }
+                await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+            }
+        }
+
+        function renderReport(data, subject, mode) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('reportContainer').classList.remove('hidden');
+
+            document.getElementById('subjectBadge').textContent = subject.split('(')[0].trim();
+            document.getElementById('modeBadge').textContent = mode === 'strict' ? 'Strict CBSE Board Examiner Mode' : 'Normal Evaluator Mode';
+            document.getElementById('modeBadge').className = mode === 'strict' ? 
+                'px-2.5 py-0.5 rounded-md bg-rose-950/80 text-rose-300 border border-rose-500/30 text-[11px] font-bold' :
+                'px-2.5 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold';
+
+            document.getElementById('marksAwarded').textContent = data.marksAwarded || 0;
+            document.getElementById('maxMarks').textContent = data.maxMarks || 0;
+            
+            const percentage = data.percentage || Math.round(((data.marksAwarded || 0) / (data.maxMarks || 1)) * 100);
+            document.getElementById('scorePercentageBadge').textContent = `${percentage}%`;
+            document.getElementById('scoreGradeTag').textContent = `Performance Grade: ${data.grade || 'Assessed'}`;
+
+            document.getElementById('transcribedText').textContent = data.transcription || 'No transcription parsed.';
+
+            const stepContainer = document.getElementById('stepBreakdown');
+            stepContainer.innerHTML = '';
+            if (data.stepsBreakdown && data.stepsBreakdown.length > 0) {
+                data.stepsBreakdown.forEach(step => {
+                    const div = document.createElement('div');
+                    let statusColor = "border-vwe-500/30 bg-slate-950/60";
+                    let statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">+${step.marksGiven}/${step.marksAllocated} Marks</span>`;
+
+                    if (step.status === 'partial') {
+                        statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/30 text-[10px] font-bold">+${step.marksGiven}/${step.marksAllocated} Step Marks</span>`;
+                    } else if (step.status === 'incorrect') {
+                        statusBadge = `<span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-500/30 text-[10px] font-bold">0/${step.marksAllocated} Marks</span>`;
+                    }
+
+                    div.className = `p-3 rounded-xl border ${statusColor} space-y-1`;
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-white">Step ${step.stepNumber}: ${step.description}</span>
+                            ${statusBadge}
+                        </div>
+                        <p class="text-[11px] text-gray-400 italic">${step.comment || ''}</p>
+                    `;
+                    stepContainer.appendChild(div);
+                });
+            } else {
+                stepContainer.innerHTML = `<p class="text-xs text-gray-400">Step details verified as single block response.</p>`;
+            }
+
+            const strengthsUl = document.getElementById('strengthsList');
+            strengthsUl.innerHTML = '';
+            (data.strengths || ['Well organized']).forEach(str => {
+                const li = document.createElement('li');
+                li.textContent = str;
+                strengthsUl.appendChild(li);
+            });
+
+            const deductionsUl = document.getElementById('deductionsList');
+            deductionsUl.innerHTML = '';
+            (data.deductionsAndMissingPoints || ['No major deductions']).forEach(ded => {
+                const li = document.createElement('li');
+                li.textContent = ded;
+                deductionsUl.appendChild(li);
+            });
+
+            document.getElementById('modelAnswerKey').innerHTML = `<p class="whitespace-pre-wrap font-sans">${data.officialCbseModelAnswer || 'N/A'}</p>`;
+            document.getElementById('examinerRemarks').textContent = `"${data.examinerRemarks || 'Keep practicing according to CBSE marking standards.'}"`;
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('printableReport');
+            const opt = {
+                margin:       0.5,
+                filename:     'VWE_Evaluator_CBSE_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, backgroundColor: '#080f0a' },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function copyReport() {
+            const text = document.getElementById('printableReport').innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Evaluation report copied to clipboard!');
+        }
+    </script>
+</body>
+</html>
